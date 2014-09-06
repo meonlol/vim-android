@@ -192,3 +192,47 @@ function! classpath#setClassPath()
 
 
 endfunction
+
+
+" MEONLOLs testing additions
+function! classpath#addClassPath(s)
+
+  " Obtain a list of current paths in the $CLASSPATH
+  " let s:oldjars = split($CLASSPATH, ':')
+
+  " Add variable
+  " call add(s:oldjars, a:s)
+  
+  "let $CLASSPATH = join(copy(s:jars), ':')
+  $CLASSPATH = "test"
+  return "test"
+  
+
+endfunction
+
+" adds class-paths the same way vim-android does it, but with input
+function! g:AddClassPath(s)
+
+  let s:paths = []  " List of source directories
+  let s:jars  = []  " List of jar files to include in CLASSPATH
+
+  " Obtain a list of current paths in the $CLASSPATH
+  let s:oldjars = split($CLASSPATH, ':')
+
+  echo "pre class:" s:oldjars "input:" a:s
+  call add(s:oldjars, a:s)
+  call extend(s:jars, s:oldjars)
+"  let s:jars = s:oldjars
+  echo "post" s:jars
+
+
+
+  let $CLASSPATH = join(copy(s:jars), ':')
+"
+  silent! call javacomplete#SetClassPath($CLASSPATH)
+"  silent! call javacomplete#SetSourcePath($SRCPATH)
+
+
+endfunction
+
+
