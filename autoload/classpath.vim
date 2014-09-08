@@ -201,7 +201,20 @@ function! classpath#addClassPath(inputPath)
   let $CLASSPATH = join(l:compoundList, ':')
 
   silent! call javacomplete#SetClassPath($CLASSPATH)
+  silent! call javacomplete#SetSourcePath($SRCPATH)
 
   echo "path" a:inputPath " was added to $CLASSPATH and javacomplete"
+
+endfunction
+
+
+
+function! classpath#addSourcePath(inputPath)
+  let l:currentPaths = split($SRCPATH, ':')
+
+  let l:compoundList =  add(l:currentPaths, a:inputPath)
+  let $SRCPATH = join(l:compoundList, ':')
+
+  silent! call javacomplete#SetSourcePath($SRCPATH)
 
 endfunction
