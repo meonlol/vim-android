@@ -51,7 +51,7 @@ function! android#findManifest()
 
   let old_wildignore = &wildignore
   set wildignore+=*/build/*
-  let g:android_manifest = findfile("AndroidManifest.xml")
+  let g:android_manifest = findfile("AndroidManifest.xml", ".;")
   let &wildignore = old_wildignore
   return g:android_manifest
 endfunction
@@ -457,3 +457,22 @@ function! android#setupAndroidCommands()
   command! AndroidUpdateTags call android#updateAndroidTags()
   command! AndroidDevices call android#listDevices()
 endfunction
+
+
+command! AndroidScan call android#scan()
+fu! android#scan()
+	let cwd = getcwd()
+	set path=cwd
+	set path?
+	echo "manifest result: " findfile("AndroidManifest.xml", getcwd())
+	if android#isAndroidProject()
+	  call android#setCompiler()
+	  call android#setAndroidSdkTags()
+	  call android#setClassPath()
+	  call android#setupAndroidCommands()
+	else
+		call android#loge("No manifest found. Does not seem to be an Android project.")
+	endif
+endfu
+
+
