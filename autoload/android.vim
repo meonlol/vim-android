@@ -238,7 +238,14 @@ function! android#compile(mode)
   endif
 
   if(android#isGradleProject())
-    let l:result = s:compile('assemble' . android#capitalize(a:mode))
+	  "if mode == 'release' it should make assembleRelease out if it
+	  "for 'test' it should just leave it
+	  if (a:mode =~ 'test') 
+		let l:result = s:compile(a:mode)
+	  else
+		let l:result = s:compile('assemble' . android#capitalize(a:mode))
+	  endif
+
   else
     let l:result = s:compile(a:mode)
   endif
