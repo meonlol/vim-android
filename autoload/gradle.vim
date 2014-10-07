@@ -2,7 +2,12 @@
 " try first to find the executable inside g:gradle_path and if not found it will
 " try using the GRADLE_HOME environment variable. Finally it will search if
 " using the vim executable() method.
+" Addition: Android Studio uses an in-project gradle structure. Look for these
+" files also.
 function! gradle#bin()
+
+	
+
 
   if !exists('g:gradle_path')
     let g:gradle_path = $GRADLE_HOME
