@@ -238,14 +238,16 @@ function! android#compile(mode)
   endif
 
   if(android#isGradleProject())
-	  "if mode == 'release' it should make assembleRelease out if it
-	  "for 'test' it should just leave it
-	  if (a:mode =~ 'test') 
-		let l:result = s:compile(a:mode)
-	  else
-		let l:result = s:compile('assemble' . android#capitalize(a:mode))
-	  endif
+    "if mode == 'release' or 'debug' it should add 'assemble' (eg. assembleRelease)
+    if (a:mode !~ 'assemble')
+      if (a:mode =~ 'release' || a:mode =~ 'debug') 
+        let l:result = s:compile('assemble' . android#capitalize(a:mode))
+        return
+      endif
+    endif
 
+    "for 'test' or others it should just execute the command
+    let l:result = s:compile(a:mode)
   else
     let l:result = s:compile(a:mode)
   endif
@@ -468,18 +470,18 @@ endfunction
 
 command! AndroidScan call android#scan()
 fu! android#scan()
-	let cwd = getcwd()
-	set path=cwd
-	set path?
-	echo "manifest result: " findfile("AndroidManifest.xml", getcwd())
-	if android#isAndroidProject()
-	  call android#setCompiler()
-	  call android#setAndroidSdkTags()
-	  call android#setClassPath()
-	  call android#setupAndroidCommands()
-	else
-		call android#loge("No manifest found. Does not seem to be an Android project.")
-	endif
+    let cwd = getcwd()
+    set path=cwd
+    set path?
+    echo "manifest result: " findfile("AndroidManifest.xml", getcwd())
+    if android#isAndroidProject()
+      call android#setCompiler()
+      call android#setAndroidSdkTags()
+      call android#setClassPath()
+      call android#setupAndroidCommands()
+    else
+        call android#loge("No manifest found. Does not seem to be an Android project.")
+    endif
 endfu
 
 
