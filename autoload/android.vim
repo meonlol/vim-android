@@ -447,3 +447,9 @@ function! android#setupAndroidCommands()
   command! AndroidUpdateTags call android#updateAndroidTags()
   command! AndroidDevices call android#listDevices()
 endfunction
+
+function! android#scanForAndroidProject()
+	"TODO: adding command to scan for android project
+	"TODO: remove repitition in the ftplugin java+xml files
+  "command! -nargs=1 AndroidBuild call android#compile(<f-args>)
+endfunction
