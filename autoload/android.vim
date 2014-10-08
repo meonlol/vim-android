@@ -98,6 +98,9 @@ function! android#getBuildType()
 
   let l:gradle_cfg_exists = filereadable('build.gradle')
   let l:gradle_bin_exists = executable(gradle#bin())
+  " TODO implement this. Should be able to use ./gradlew if found, and should
+  " take precedence over locally installed gradle version.
+  let l:gradle_wrapper_exists = executable('./gradlew') " Android studio generated projects use a gradle wrapper
   let l:ant_cfg_exists = filereadable('build.xml')
   let l:ant_bin_exists = executable(ant#bin())
 
