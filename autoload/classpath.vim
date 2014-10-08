@@ -175,6 +175,8 @@ function! classpath#setClassPath()
   if android#isGradleProject()
     call s:addGradleSdkJar(s:paths, s:jars)
     call s:addGradleClassPath(getcwd(), s:paths, s:jars)
+    call s:addGeneratedClasses(s:paths, s:jars) "Adding generated classes from inside the build Folder
+    call s:addOutputtGradlePaths(s:paths, s:jars) "Add paths output by the gradle.vim script
   else
     call s:addManifestSdkJar(s:paths, s:jars)
     call s:addPropertiesClassPath(getcwd(), s:paths, s:jars)
@@ -194,45 +196,23 @@ function! classpath#setClassPath()
 endfunction
 
 
-fu! classpath#setClassPath2()
-  if ! android#checkAndroidHome()
-    return
-  endif
+function! s:addGeneratedClasses(paths, jars)
+  call add(s:jars, "./build/classes/debug") "Adding generated classes from the build folder
+  " search for jars inside ./build/exploded-aar/ dir
 
-  let s:paths = []  " List of source directories
-  let s:jars  = []  " List of jar files to include in CLASSPATH
+endfunction
 
-  " Obtain a list of current paths in the $CLASSPATH
-  let s:oldjars = split($CLASSPATH, ':')
+function! s:addOutputtGradlePaths(paths, jars)
+	let g:outputPathsFileName = '.syntastic-classpath'
 
-  call s:addProjectClassPath(s:paths, s:jars)
-  if android#isGradleProject()
-    call s:addGradleSdkJar(s:paths, s:jars)
-    call s:addGradleClassPath(getcwd(), s:paths, s:jars)
-  else
-    call s:addManifestSdkJar(s:paths, s:jars)
-    call s:addPropertiesClassPath(getcwd(), s:paths, s:jars)
-  endif
-  call s:addLibJarClassPath(getcwd(), s:jars)
-
-  call add(s:jars, "./build/classes/debug")
-  call extend(s:jars, s:oldjars)
-
-  let $CLASSPATH = join(copy(s:jars), ':')
-  let $SRCPATH = join(copy(s:paths), ':')
-  exec "setlocal path=" . join(copy(s:paths), ',')
-
-
-  let g:syntastic_java_javac_classpath = g:syntastic_java_javac_classpath . ":" . $CLASSPATH
+  let g:syntastic_java_javac_classpath = g:syntastic_java_javac_classpath . ":" . $CLASSPATH "addition
   echo "Combined=" . g:syntastic_java_javac_classpath
 
-  if filereadable('.syntastic-classpath')
-	  call writefile(["g:syntastic_java_javac_classpath = '" . g:syntastic_java_javac_classpath . "'"], '.syntastic-classpath')
+  if filereadable(g:outputPathsFileName)
+	  call writefile(["g:syntastic_java_javac_classpath = '" . g:syntastic_java_javac_classpath . "'"], g:outputPathsFileName)
   endif
 
-  silent! call javacomplete#SetClassPath($CLASSPATH)
-  silent! call javacomplete#SetSourcePath($SRCPATH)
-endfu
+endfunction
 
 " adds an input path to the $CLASSPATH + javacomplete
 function! classpath#addClassPath(inputPath)
