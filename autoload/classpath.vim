@@ -156,6 +156,8 @@ function! s:addGradleSdkJar(paths, jars)
   end
 endfunction
 
+
+
 ""
 " Update the CLASSPATH environment variable to include all classes related to
 " the current Android project.
@@ -169,12 +171,17 @@ function! classpath#setClassPath()
   let s:jars  = []  " List of jar files to include in CLASSPATH
 
   " Obtain a list of current paths in the $CLASSPATH
-  let s:oldjars = split($CLASSPATH, ':')
+  let s:oldjars = [] "split($CLASSPATH, ':')
 
   call s:addProjectClassPath(s:paths, s:jars)
   if android#isGradleProject()
     call s:addGradleSdkJar(s:paths, s:jars)
-    call s:addGradleClassPath(getcwd(), s:paths, s:jars)
+    "call s:addGradleClassPath(getcwd(), s:paths, s:jars)
+	call classpath#addOutputtGradlePaths(s:jars)	" my own addition
+	" New gradle build structure has the intermediate folder inbetween. Build check for this?
+	call add(s:jars, "./build/intermediates/classes/debug")		" my own addition
+	"call add(s:jars, "./build/exploded-aar/com.android.support/appcompat-v7/19.1.0/classes.jar")		" my own addition
+	"call add(s:paths, "./build/exploded-aar")		" my own addition
   else
     call s:addManifestSdkJar(s:paths, s:jars)
     call s:addPropertiesClassPath(getcwd(), s:paths, s:jars)
@@ -183,9 +190,14 @@ function! classpath#setClassPath()
 
   call extend(s:jars, s:oldjars)
 
+  echo "paths count: " . len(s:jars)
+
   let $CLASSPATH = join(copy(s:jars), ':')
   let $SRCPATH = join(copy(s:paths), ':')
+
   exec "setlocal path=" . join(copy(s:paths), ',')
+
+  "call s:writeOutSyntastic()
 
   silent! call javacomplete#SetClassPath($CLASSPATH)
   silent! call javacomplete#SetSourcePath($SRCPATH)
@@ -193,46 +205,65 @@ function! classpath#setClassPath()
 
 endfunction
 
+fu! s:writeOutSyntastic()
+  let g:syntastic_java_javac_classpath = $CLASSPATH
+  "echo "Combined=" . g:syntastic_java_javac_classpath
 
-fu! classpath#setClassPath2()
-  if ! android#checkAndroidHome()
-    return
-  endif
-
-  let s:paths = []  " List of source directories
-  let s:jars  = []  " List of jar files to include in CLASSPATH
-
-  " Obtain a list of current paths in the $CLASSPATH
-  let s:oldjars = split($CLASSPATH, ':')
-
-  call s:addProjectClassPath(s:paths, s:jars)
-  if android#isGradleProject()
-    call s:addGradleSdkJar(s:paths, s:jars)
-    call s:addGradleClassPath(getcwd(), s:paths, s:jars)
-  else
-    call s:addManifestSdkJar(s:paths, s:jars)
-    call s:addPropertiesClassPath(getcwd(), s:paths, s:jars)
-  endif
-  call s:addLibJarClassPath(getcwd(), s:jars)
-
-  call add(s:jars, "./build/classes/debug")
-  call extend(s:jars, s:oldjars)
-
-  let $CLASSPATH = join(copy(s:jars), ':')
-  let $SRCPATH = join(copy(s:paths), ':')
-  exec "setlocal path=" . join(copy(s:paths), ',')
-
-
-  let g:syntastic_java_javac_classpath = g:syntastic_java_javac_classpath . ":" . $CLASSPATH
-  echo "Combined=" . g:syntastic_java_javac_classpath
-
-  if filereadable('.syntastic-classpath')
-	  call writefile(["g:syntastic_java_javac_classpath = '" . g:syntastic_java_javac_classpath . "'"], '.syntastic-classpath')
-  endif
-
-  silent! call javacomplete#SetClassPath($CLASSPATH)
-  silent! call javacomplete#SetSourcePath($SRCPATH)
+  "if filereadable('.syntastic-classpath')
+  "    call writefile(["g:syntastic_java_javac_classpath = '" . $CLASSPATH . "'"], '.syntastic-classpath')
+  "endif
 endfu
+
+
+"fu! classpath#setClassPath2()
+"  if ! android#checkAndroidHome()
+"    return
+"  endif
+"
+"  let s:paths = []  " List of source directories
+"  let s:jars  = []  " List of jar files to include in CLASSPATH
+"
+"  " Obtain a list of current paths in the $CLASSPATH
+"  let s:oldjars = split($CLASSPATH, ':')
+"
+"  call s:addProjectClassPath(s:paths, s:jars)
+"  if android#isGradleProject()
+"    call s:addGradleSdkJar(s:paths, s:jars)
+"    call s:addGradleClassPath(getcwd(), s:paths, s:jars)
+"	call s:classpath#addOutputtGradlePaths(s:paths)
+"  else
+"    call s:addManifestSdkJar(s:paths, s:jars)
+"    call s:addPropertiesClassPath(getcwd(), s:paths, s:jars)
+"  endif
+"  call s:addLibJarClassPath(getcwd(), s:jars)
+"
+"  call add(s:jars, "./build/classes/debug")
+"  call extend(s:jars, s:oldjars)
+"
+"  let $CLASSPATH = join(copy(s:jars), ':')
+"  let $SRCPATH = join(copy(s:paths), ':')
+"  exec "setlocal path=" . join(copy(s:paths), ',')
+"
+"
+"  let g:syntastic_java_javac_classpath = g:syntastic_java_javac_classpath . ":" . $CLASSPATH
+"  echo "Combined=" . g:syntastic_java_javac_classpath
+"
+"  if filereadable('.syntastic-classpath')
+"	  call writefile(["g:syntastic_java_javac_classpath = '" . g:syntastic_java_javac_classpath . "'"], '.syntastic-classpath')
+"  endif
+"
+"  silent! call javacomplete#SetClassPath($CLASSPATH)
+"  silent! call javacomplete#SetSourcePath($SRCPATH)
+"endfu
+
+
+function! classpath#addOutputtGradlePaths(paths)
+	if filereadable('.syntastic-classpath')
+		let l:synPaths = split(readfile('.syntastic-classpath')[0], ':')
+		call extend(a:paths, l:synPaths)
+		"echo a:paths
+	endif
+endfunction
 
 " adds an input path to the $CLASSPATH + javacomplete
 function! classpath#addClassPath(inputPath)

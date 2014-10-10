@@ -1,0 +1,22 @@
+These notes are here because I am good with information, but bad at
+remembering what I was just thingking about, or what I've found out before.
+They are just for myself, so I just need to understand them myself. I'll
+probably even be mixing the odd Germain or Dutch word. You have been warned.
+
+
+The plugin seems to reload all it's functionality as soon as a java file, or
+the Android.xml is opened.
+
+# PLUGIN
+Everything in the plugin directory is available as soon as the plugin is
+loaded. The new AndroidScan command is here.
+- move android#scan() method into here?
+
+
+# AndroidBuild
+This only seems to work when % is a Java file.
+
+
+This modline makes my notes look the way I want them to (like the help).
+--------------------------------------------------------------------------------
+ vim:tw=88:fo=tcq2:isk=!-~,^*,^\|,^\":ts=4:ft=help:norl:tags=./tags;~/Dropbox/leon/notes/:
