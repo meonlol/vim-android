@@ -178,8 +178,11 @@ function! classpath#setClassPath()
     call s:addGradleSdkJar(s:paths, s:jars)
     "call s:addGradleClassPath(getcwd(), s:paths, s:jars)
 	call classpath#addOutputtGradlePaths(s:jars)	" my own addition
+	call add(s:jars, "./src/main/java") "Adding java source classes.
+	call add(s:jars, "./build/intermediates/classes/debug")		" Add built classes (mostly for R source)
 	" New gradle build structure has the intermediate folder inbetween. Build check for this?
-	call add(s:jars, "./build/intermediates/classes/debug")		" my own addition
+	" call add(s:jars, "/Users/lschreuder/Documents/workspace/bezemaFarbstoffsortiment_gradle/src/main/java/") "Adding java classes. Needs testing
+	" call add(s:paths, "./src/main/java") "Adding java classes. Needs testing
 	"call add(s:jars, "./build/exploded-aar/com.android.support/appcompat-v7/19.1.0/classes.jar")		" my own addition
 	"call add(s:paths, "./build/exploded-aar")		" my own addition
   else
@@ -190,7 +193,7 @@ function! classpath#setClassPath()
 
   call extend(s:jars, s:oldjars)
 
-  echo "paths count: " . len(s:jars)
+  " echo "paths count: " . len(s:jars)
 
   let $CLASSPATH = join(copy(s:jars), ':')
   let $SRCPATH = join(copy(s:paths), ':')
