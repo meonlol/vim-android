@@ -88,6 +88,9 @@ endfunction
 " the vimrc file.
 function! android#getBuildType()
 
+  " if the home directory was not set correctly, is just assumes the build
+  " type was already set, when is was set incorrectly, but Android was found.
+  " Does this need fixing?
   if(exists('g:android_build_type'))
     return g:android_build_type
   endif
@@ -97,7 +100,7 @@ function! android#getBuildType()
   if ! android#checkAndroidHome()
     return g:android_build_type
   endif
-
+  
   let l:gradle_cfg_exists = filereadable('build.gradle')
   let l:gradle_bin_exists = executable(gradle#bin())
   let l:ant_cfg_exists = filereadable('build.xml')
@@ -240,7 +243,16 @@ function! android#compile(mode)
   endif
 
   if(android#isGradleProject())
-    let l:result = s:compile('assemble' . android#capitalize(a:mode))
+    "if mode == 'release' or 'debug' it should add 'assemble' (eg. assembleRelease)
+    if (a:mode !~ 'assemble')
+      if (a:mode =~ 'release' || a:mode =~ 'debug') 
+        let l:result = s:compile('assemble' . android#capitalize(a:mode))
+        return
+      endif
+    endif
+
+    "for 'test' or others it should just execute the command
+    let l:result = s:compile(a:mode)
   else
     let l:result = s:compile(a:mode)
   endif
@@ -409,32 +421,13 @@ function! android#getProjectName()
   return s:androidProjectName
 endfunction
 
-function! android#getDebugApkPath()
-  if(android#isGradleProject())
-    let s:androidDebugApkPath = "build/apk/" . android#getProjectName() . "-debug-unaligned.apk"
-  else
-    let s:androidDebugApkPath = "bin/" . android#getProjectName() . "-debug.apk"
-  endif
-  return s:androidDebugApkPath
-endfunction
-
-function! android#getReleaseApkPath()
-  if(android#isGradleProject())
-    let s:androidReleaseApkPath = "build/apk/" . android#getProjectName() . "-release.apk"
-  else
-    let s:androidReleaseApkPath = "bin/" . android#getProjectName() . "-release.apk"
-  endif
-  return s:androidReleaseApkPath
-endfunction
-
 function! android#getApkPath(mode)
-  if a:mode == "release"
-    return android#getReleaseApkPath()
-  elseif a:mode == "debug"
-    return android#getDebugApkPath()
-  else
-    call android#logw("Could not find apk for " . a:mode . " build. Maybe need to build it first?")
-  endif
+  let s:androidApkFile = android#getProjectName() . "-" . a:mode . ".apk"
+  let old_wildignore = &wildignore
+  let &wildignore = ""
+  let s:androidApkPath = findfile(s:androidApkFile, ".**")
+  let &wildignore = old_wildignore
+  return s:androidApkPath
 endfunction
 
 function! android#listDevices()
